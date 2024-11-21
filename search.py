@@ -1,4 +1,3 @@
-import math
 import random
 
 class Problem:
@@ -9,52 +8,97 @@ class Problem:
         self.accuracy_dict = {}
 
     def algorithm(self):
-        if self.algo_choice == 1:                                                                                        #forward selection
-            features = set(range(1, self.num_features + 1))                                                              #add a set thats essentially just an enumerated list of featuers
-            explored_features = set()
+        if self.algo_choice == 1:                                                                                                            #forward selection
+            features = set(range(1, self.num_features + 1))                                                                                  #add a set thats essentially just an enumerated list of featuers
+            explored_features = set()                       
             best_subset = set()
             max_accuracy = -1
 
-            no_feature_accuracy = self.evaluation_function(0)                                                           #evaluate default rate 
+            no_feature_accuracy = self.evaluation_function(0)                                                                                #evaluate default rate 
             max_accuracy = no_feature_accuracy
+            print("\nForward Selection:")
 
-            print(f"Using no features and \"random\" evaluation, I get an accuracy of {no_feature_accuracy:.2f}%\n")
+            print(f"\nUsing no features and \"random\" evaluation, I get an accuracy of {no_feature_accuracy:.2f}%\n")
 
-            while len(explored_features) < self.num_features:                                                           #will keep looping until all features are searched/break is called 
+            while len(explored_features) < self.num_features:                                                                                #will keep looping until all features are searched/break is called 
                 best_feature = None                                                                                     
-                for feature in features - explored_features:                                                            # {1,2,3,4} - {2,3} = {1,4}
+                
+                for feature in features - explored_features:                                                                                 # {1,2,3,4} - {2,3} = {1,4}
+                    
                     if feature not in explored_features:                                                                
-                        curr_set = explored_features | {feature}                                                        # {2,3} -> {1,2,3}, {2,3,4} (logic explores all subsets throughout all iterations)
+                        curr_set = explored_features | {feature}                                                                             # {2,3} -> {1,2,3}, {2,3,4} (logic explores all subsets throughout all iterations)
                         accuracy = self.evaluation_function(len(curr_set), tuple(curr_set))
                         print(f"\tUsing feature(s) {curr_set} accuracy is {accuracy:.2f}%")
+                        
                         if accuracy > max_accuracy:
                             max_accuracy = accuracy
                             best_feature = feature 
                             best_subset = curr_set
-                        elif accuracy < max_accuracy:
-                            print("Warning, Accuracy has decreased!")
+                
                 if best_feature is not None:
                     explored_features.add(best_feature)
                     print(f"Feature set {best_subset} was best, accuracy is {max_accuracy:.2f}%\n")
+                
                 else:
-                    break                                                                                                 #if no improvement found then we have found the local optimum, break out of search
+                    print("Warning, Accuracy has decreased!")
+                    break
+                                                                                                                                            #if no improvement found then we have found the local optimum, break out of search
 
             if len(best_subset) == 0:
-                print(f"Finished search!! The best feature subset is nothing, which has an accuracy of {max_accuracy:.2f}%\n")
+                print(f"\nFinished search!! The best feature subset is nothing, which has an accuracy of {max_accuracy:.2f}%\n")
             else:
-                print(f"Finished search!! The best feature subset is {best_subset}, which has an accuracy of {max_accuracy:.2f}%\n")
+                print(f"\nFinished search!! The best feature subset is {best_subset}, which has an accuracy of {max_accuracy:.2f}%\n")
 
+        else:                                                                                                                               #backward elimination 
+            features = set(range(1, self.num_features + 1))
+            best_subset = features.copy()
+            max_accuracy = -1
+
+
+            all_feature_accuracy = self.evaluation_function(len(best_subset), tuple(best_subset))
+            max_accuracy = all_feature_accuracy
             
-                
+            print("\Backward Elimination:")
+            print(f"\nUsing all features ({best_subset}) and \"random\" evaluation, I get an accuracy of {all_feature_accuracy:.2f}%\n")
 
-    def evaluation_function(self, num_features, subset=None):                                                             #for number of features we generate, generate a random probability to each
+            while len(features) > 0:
+                
+                worst_feature = None
+                
+                for feature in features:
+                    curr_set = features - {feature}                                                                                         #{1,2,3,4} -> {2,3,4}, {1,3,4}, {1,2,3}
+                    accuracy = self.evaluation_function(len(curr_set), tuple(curr_set))
+                    if len(curr_set) > 0:
+                        print(f"\tUsing feature(s) {curr_set} accuracy is {accuracy:.2f}%")
+                    else:
+                        print(f"\tUsing no features, accuracy is {accuracy:.2f}%")
+
+                    if accuracy > max_accuracy:
+                            max_accuracy = accuracy
+                            worst_feature = feature 
+                            best_subset = curr_set
+
+                if worst_feature is not None:                                                                                                       
+                    features.remove(worst_feature)                                                                                          #continue search from subsets without that featture
+                    print(f"Feature set {best_subset} was best, accuracy is {max_accuracy:.2f}%\n")
+                
+                else:
+                    print("Warning, Accuracy has decreased in all possible subsets when removing feature!")
+                    break
+
+            if len(best_subset) == 0:
+                print(f"\nFinished search!! The best feature subset is nothing, which has an accuracy of {max_accuracy:.2f}%\n")
+            else:
+                print(f"\nFinished search!! The best feature subset is {best_subset}, which has an accuracy of {max_accuracy:.2f}%\n")
+
+    def evaluation_function(self, num_features, subset=None):                                                                               #for number of features we generate, generate a random probability to each
         if num_features == 0:
             subset = tuple()
-            accuracy = random.uniform(.4,.5) * 100 
-            self.accuracy_dict[subset] = accuracy                                                                       #just to let empty set not dominate as much from anedoctal runs
-            return self.accuracy_dict[subset]                                                                              #edge case for empty set
+            accuracy = random.uniform(.4,.5) * 100                                                                                          #just to let empty set not dominate as much from anedoctal runs
+            self.accuracy_dict[subset] = accuracy                                                                                           
+            return self.accuracy_dict[subset]                                                                                               #edge case for empty set
         if subset not in self.accuracy_dict:
-            accuracy = random.uniform(.2, 1) * 100                                                                        #don't really want to deal with accuracies in like the 0.89% range
+            accuracy = random.uniform(.2, 1) * 100                                                                                          #don't really want to deal with accuracies in like the 0.89% range
             self.accuracy_dict[subset] = accuracy
             return self.accuracy_dict[subset]
 
