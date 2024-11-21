@@ -49,10 +49,13 @@ class Problem:
 
     def evaluation_function(self, num_features, subset=None):                                                             #for number of features we generate, generate a random probability to each
         if num_features == 0:
-            subset = tuple()                                                                                              #edge case for empty set
+            subset = tuple()
+            accuracy = random.uniform(.4,.5) * 100 
+            self.accuracy_dict[subset] = accuracy                                                                       #just to let empty set not dominate as much from anedoctal runs
+            return self.accuracy_dict[subset]                                                                              #edge case for empty set
         if subset not in self.accuracy_dict:
             accuracy = random.uniform(.2, 1) * 100                                                                        #don't really want to deal with accuracies in like the 0.89% range
             self.accuracy_dict[subset] = accuracy
-        return self.accuracy_dict[subset]
+            return self.accuracy_dict[subset]
 
 
