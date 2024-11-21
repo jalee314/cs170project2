@@ -58,7 +58,7 @@ class Problem:
             all_feature_accuracy = self.evaluation_function(len(best_subset), tuple(best_subset))
             max_accuracy = all_feature_accuracy
             
-            print("\Backward Elimination:")
+            print("\nBackward Elimination:")
             print(f"\nUsing all features ({best_subset}) and \"random\" evaluation, I get an accuracy of {all_feature_accuracy:.2f}%\n")
 
             while len(features) > 0:
